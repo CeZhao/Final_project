@@ -1,3 +1,4 @@
+//ddddd
 import javax.swing.*;
 import javax.swing.UIManager.*;
 import javax.swing.event.*;
@@ -25,23 +26,33 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
 
     private ArrayList<QuizSet> savedQSets = new ArrayList<QuizSet>();
 
+    // the index in savedQSets of the currently selected quiz set
     private int selectedSet = -1;
 
+    // index of the currently selected question from the selected set
     private int selectedQuestion = -1;
 
+    // if this variable is true then we aren't going to add the question as a
+    // new one but instead we will overwrite it in the currently selected quiz set
     private boolean editingQuestion = false;
 
     private DateTimeFormatter dtFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    private JPanel containerPanel = new JPanel();
+    private JPanel containerPanel = new JPanel(); // used for the CardLayout
 
+    // keeps track of what panel is currently being shown in the CardLayout
+    // used to control what action is taken when a button is being pressed on the shown panel
     private String currentlyShownPanel = "main";
 
+    // this holds the components dynamcially created for each quiz
+    // we hold them in here so that they will retain their values
+    // (e.g. checked, clicked, words typed) after being removed and readded to the quiz choice panel
     private ArrayList<ArrayList<Component>> quizChoiceComponents;
 
+    // a collection of button groups that we need for quiz JRadioButton components
     private ArrayList<ButtonGroup> quizButtonGroups;
 
-    // MAIN PANEL
+    // START MAIN PANEL COMPONENTS
 
     private JPanel mainPanel = new JPanel();
 
@@ -49,19 +60,19 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
 
     private JPanel qSelectPanel = new JPanel();
 
-    private JPanel qSelectSubPanelOne = new JPanel();
+    private JPanel qSelectSubPanelOne = new JPanel(); // contains q bank table
 
     private JTable qBankTable;
 
     private JScrollPane qBankTablePane = new JScrollPane();
 
-    private JPanel qSelectSubPanelTwo = new JPanel();
+    private JPanel qSelectSubPanelTwo = new JPanel(); // contains q bank start edit and delete
 
     private JButton qSelectStartButton = new JButton("Start");
     private JButton qSelectEditButton = new JButton("Edit");
     private JButton qSelectDeleteButton = new JButton("Delete");
 
-    private JPanel qSelectSubPanelThree = new JPanel();
+    private JPanel qSelectSubPanelThree = new JPanel(); // contains q bank create new button
 
     private JButton qSelectCreateButton = new JButton("Create New");
 
@@ -81,6 +92,10 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
     private JTable previewTable;
     private JScrollPane previewScrollPane = new JScrollPane();
 
+    // END MAIN PANEL COMPONENTS
+
+    // START EDIT PANEL COMPONENTS
+
     private JPanel editPanel = new JPanel();
 
     private JScrollPane editPanelTablePane = new JScrollPane();
@@ -94,12 +109,15 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
     private JButton editPanelDeleteButton = new JButton("Delete");
     private JButton editPanelSaveButton = new JButton("Save");
 
-    // NEW QUESTION PANEL
+    // END EDIT PANEL COMPONENTS
+
+    // START NEW QUESTION PANEL COMPONENTS
 
     private JPanel newQuestionPaneView = new JPanel();
 
     private JScrollPane newQuestionPane = new JScrollPane(newQuestionPaneView);
 
+    // Question type panel
     private JPanel newQuestionQTypeLabelPanel = new JPanel();
     private JLabel newQuestionQTypeLabel = new JLabel("Question Type");
 
@@ -113,12 +131,14 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
 
     private ButtonGroup qTypeButtonGroup = new ButtonGroup();
 
+    // Question text panel
     private JPanel newQuestionQTextLabelPanel = new JPanel();
     private JLabel newQuestionQTextLabel = new JLabel("Question Text");
 
     private JTextArea newQuestionQText = new JTextArea(10, 10);
     private JScrollPane newQuestionQTextPane = new JScrollPane(newQuestionQText);
 
+    // Question choice panel
     private JPanel newQuestionQChoiceLabelPanel = new JPanel();
     private JLabel newQuestionQChoiceLabel = new JLabel("Question Choices");
 
@@ -129,6 +149,14 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
     private JButton newQuestionQChoiceAddButton = new JButton("Add");
     private JButton newQuestionQChoiceRemButton = new JButton("Remove");
 
+    // Question hint panel
+    private JPanel newQuestionQHintLabelPanel = new JPanel();
+    private JLabel newQuestionQHintLabel = new JLabel("Question Hints");
+
+    private JPanel newQuestionQHintPanel = new JPanel();
+    private JTextField newQuestionQHint = new JTextField(20);
+
+    // Question answer panel
     private JPanel newQuestionQAnsLabelPanel = new JPanel();
     private JLabel newQuestionQAnsLabel = new JLabel("Question Answers");
 
@@ -139,11 +167,14 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
     private JButton newQuestionQAnsAddButton = new JButton("Add");
     private JButton newQuestionQAnsRemButton = new JButton("Remove");
 
+    // Question Save button panel
     private JPanel newQuestionQSavePanel = new JPanel();
     private JButton newQuestionQSaveButton = new JButton("Save");
     private JButton newQuestionQExitButton = new JButton("Exit");
 
-    //QUIZ PANEL
+    // END NEW QUESTION PANEL COMPONENTS
+
+    // START QUIZ PANEL COMPONENTS
 
     private JPanel quizPanel = new JPanel();
 
@@ -164,6 +195,12 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
     private JButton quizExitButton = new JButton("Exit");
     private JButton quizPrevButton = new JButton("Previous");
     private JButton quizNextButton = new JButton("Next");
+    // Hint
+    private JButton quizHintButton = new JButton("Hint");
+
+    // END QUIZ PANEL COMPONENTS
+
+    // START QUIZ RESULT COMPONENTS
 
     private JPanel quizResultPanel = new JPanel();
 
@@ -186,8 +223,14 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
     private JButton restartButton = new JButton("Restart");
     private JButton mainMenuButton = new JButton("Main Menu");
 
+    // END QUIZ RESULT COMPONENTS
+
     QuizGui() {
+
+        // JFrame configuration
         super("QuizMaker");
+
+        // set the look and feel
         try {
             for(LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
                 if("Nimbus".equals(info.getName())) {
@@ -195,8 +238,10 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
                 }
             }
         }catch (Exception ex) {
+            // go with default
         }
 
+        // settings for the JFrame
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
         setLocation(60, 60);
@@ -204,12 +249,15 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
 
         containerPanel.setLayout(new CardLayout());
 
-        //MAIN PANEL
 
+        // START MAIN PANEL CONFIGURATION
+
+        // create table for Quiz Banks
         this.createTable("set");
 
         qBankTable.addMouseListener(this);
 
+        // set layouts for panels
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.PAGE_AXIS));
 
         qSelectDetailPanel.setLayout(new BoxLayout(qSelectDetailPanel, BoxLayout.LINE_AXIS));
@@ -223,6 +271,9 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
 
         previewPanel.setLayout(new BoxLayout(previewPanel, BoxLayout.PAGE_AXIS));
 
+        // qSelectDetailPanel and subpanels
+
+        // qSelectPanel
         qBankTablePane.setPreferredSize(new Dimension(300, 175));
         qBankTablePane.setMaximumSize(new Dimension(300, 175));
         qSelectSubPanelOne.add(qBankTablePane);
@@ -247,6 +298,10 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
         qSelectPanel.add(Box.createRigidArea(new Dimension(0, 5)));
         qSelectPanel.add(qSelectSubPanelThree);
 
+        // qDetailPanel
+        // add a little bit of spacing between each of the labels
+
+
         qDetailPanel.add(Box.createRigidArea(new Dimension(0, 20)));
         qBankNameLabel.setFont(detailLabelFont);
         qDetailPanel.add(qBankNameLabel);
@@ -270,6 +325,7 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
 
         qSelectDetailPanel.add(Box.createRigidArea(new Dimension(25, 0)));
         qSelectDetailPanel.add(qSelectPanel);
+        // spacing between the question bank panel and the details panel
         qSelectDetailPanel.add(Box.createRigidArea(new Dimension(50, 0)));
         qSelectDetailPanel.add(new JSeparator(SwingConstants.VERTICAL));
         qSelectDetailPanel.add(Box.createRigidArea(new Dimension(50, 0)));
@@ -290,11 +346,16 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
 
         mainPanel.add(previewPanel);
 
+        // END MAIN PANEL CONFIGURATION
+
+        // START EDIT PANEL CONFIGURATION
+
         editPanel.setLayout(new BoxLayout(editPanel, BoxLayout.PAGE_AXIS));
         editPanelButtonPanel.setLayout(new BoxLayout(editPanelButtonPanel, BoxLayout.LINE_AXIS));
 
         editPanel.add(editPanelTablePane);
 
+        // adding the buttons to the edit panel
         editPanelAddButton.addActionListener(this);
         editPanelButtonPanel.add(editPanelAddButton);
 
@@ -315,7 +376,11 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
         editPanel.add(Box.createRigidArea(new Dimension(0, 15))); // some spacing between table and buttons
         editPanel.add(editPanelButtonPanel);
 
-        //NEW QUESTION PANEL
+        // END EDIT PANEL CONFIGURATION
+
+        // START NEW QUESTION PANEL CONFIGURATION
+
+        // set layouts
 
         newQuestionQTypeLabelPanel.setLayout(new BoxLayout(newQuestionQTypeLabelPanel,
                 BoxLayout.LINE_AXIS));
@@ -334,6 +399,11 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
 
         newQuestionQChoiceButtonPanel.setLayout(new BoxLayout(newQuestionQChoiceButtonPanel,
                 BoxLayout.LINE_AXIS));
+
+        // hint part
+        newQuestionQHintLabelPanel.setLayout(new BoxLayout(newQuestionQHintLabelPanel, BoxLayout.LINE_AXIS));
+        newQuestionQHintPanel.setLayout(new BoxLayout(newQuestionQHintPanel, BoxLayout.PAGE_AXIS));
+
 
         newQuestionQAnsLabelPanel.setLayout(new BoxLayout(newQuestionQAnsLabelPanel,
                 BoxLayout.LINE_AXIS));
@@ -389,6 +459,15 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
 
         newQuestionQChoiceButtonPanel.add(Box.createRigidArea(new Dimension(300, 0)));
 
+
+        // hint part
+        newQuestionQHintLabel.setFont(detailLabelFont);
+        newQuestionQHintLabelPanel.add(newQuestionQHintLabel);
+        newQuestionQHintPanel.add(newQuestionQHint);
+
+
+        // we're setting the name on these so that we can target the right one in the
+        // action listener when they are clicked
         newQuestionQChoiceAddButton.setName("Choice Add");
         newQuestionQChoiceAddButton.addActionListener(this);
         newQuestionQChoiceButtonPanel.add(newQuestionQChoiceAddButton);
@@ -413,6 +492,7 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
         newQuestionQAnsRemButton.addActionListener(this);
         newQuestionQAnsRemButton.setEnabled(false);
         newQuestionQAnsButtonPanel.add(newQuestionQAnsRemButton);
+
 
         newQuestionQSaveButton.addActionListener(this);
         newQuestionQSavePanel.add(newQuestionQSaveButton);
@@ -440,11 +520,20 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
         newQuestionPaneView.add(Box.createRigidArea(new Dimension(0, 10)));
         newQuestionPaneView.add(newQuestionQAnsButtonPanel);
         newQuestionPaneView.add(Box.createRigidArea(new Dimension(0, 20)));
+
+        // hint part
+        newQuestionPaneView.add(newQuestionQHintLabelPanel);
+        newQuestionPaneView.add(newQuestionQHintPanel);
+        newQuestionPaneView.add(Box.createRigidArea(new Dimension(0, 20)));
+
         newQuestionPaneView.add(newQuestionQSavePanel);
         newQuestionPaneView.add(Box.createRigidArea(new Dimension(0, 20)));
 
-        //QUIZ PANEL
+        // END NEW QUESTION PANEL CONFIGURATION
 
+        // START QUIZ PANEL CONFIGURATION
+
+        // set layouts
         quizPanel.setLayout(new BoxLayout(quizPanel, BoxLayout.PAGE_AXIS));
         quizLabelPanel.setLayout(new BoxLayout(quizLabelPanel, BoxLayout.LINE_AXIS));
         quizQuestionLabelPanel.setLayout(new BoxLayout(quizQuestionLabelPanel, BoxLayout.LINE_AXIS));
@@ -453,6 +542,7 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
         ((GridLayout) quizChoicePanel.getLayout()).setVgap(10);
         quizPrevNextButtonPanel.setLayout(new BoxLayout(quizPrevNextButtonPanel, BoxLayout.LINE_AXIS));
 
+        // adding components
         quizLabel.setFont(new Font("Serif", Font.BOLD, 21));
         quizLabelPanel.add(quizLabel);
 
@@ -462,14 +552,25 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
         quizQuestionText.setFont(new Font("Serif", Font.BOLD, 15));
         quizQuestionPanel.add(quizQuestionText);
 
+
+
         quizExitButton.addActionListener(this);
         quizPrevNextButtonPanel.add(quizExitButton);
         quizPrevNextButtonPanel.add(Box.createRigidArea(new Dimension(200, 0)));
+
         quizPrevButton.addActionListener(this);
         quizPrevNextButtonPanel.add(quizPrevButton);
         quizPrevNextButtonPanel.add(Box.createRigidArea(new Dimension(20, 0)));
+
         quizNextButton.addActionListener(this);
         quizPrevNextButtonPanel.add(quizNextButton);
+        quizPrevNextButtonPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+// Hint
+        quizHintButton.addActionListener(this);
+        quizPrevNextButtonPanel.add(quizHintButton);
+        quizPrevNextButtonPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+
+
 
         quizPanel.add(quizLabelPanel);
         quizPanel.add(Box.createRigidArea(new Dimension(0, 20)));
@@ -489,7 +590,11 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
         quizPanel.add(quizChoiceScrollPane);
         quizPanel.add(Box.createRigidArea(new Dimension(0, 30)));
         quizPanel.add(quizPrevNextButtonPanel);
+        // END QUIZ PANEL CONFIGURATION
 
+        // START QUIZ RESULT PANEL CONFIGURATION
+
+        // set layouts
         quizResultPanel.setLayout(new BoxLayout(quizResultPanel, BoxLayout.PAGE_AXIS));
         quizResultQuizLabelPanel.setLayout(new BoxLayout(quizResultQuizLabelPanel, BoxLayout.LINE_AXIS));
         quizResultLabelPanel.setLayout(new BoxLayout(quizResultLabelPanel, BoxLayout.LINE_AXIS));
@@ -533,6 +638,10 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
         quizResultPanel.add(Box.createRigidArea(new Dimension(0, 30)));
         quizResultPanel.add(quizResultButtonPanel);
 
+
+
+        // END QUIZ RESULT PANEL CONFIGURATION
+
         mainPanel.setPreferredSize(new Dimension(600, 500));
         mainPanel.setMaximumSize(new Dimension(600, 500));
         containerPanel.add(mainPanel, "main");
@@ -558,9 +667,12 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
         setSize(650, 575);
     }
 
+    // action listeners
 
     public void actionPerformed(ActionEvent e) {
         Object source = e.getSource();
+
+        // process JButton events
         if(source instanceof JButton) {
 
             if(currentlyShownPanel.equals("main")) {
@@ -568,6 +680,9 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
                 if(((JButton) source).getText().equals("Start")) {
 
                     if(selectedSet != -1 && savedQSets.get(selectedSet).getAllQuestions().size() != 0) {
+                        // since we are starting at the beginning of the quiz, there
+                        // is no reason for the "previous" button to be enabled
+
                         quizPrevButton.setEnabled(false);
 
                         qEng.setQuestionSet(savedQSets.get(selectedSet).getAllQuestions());
@@ -576,6 +691,7 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
 
                         quizLabel.setText(savedQSets.get(selectedSet).getName());
 
+                        // create the components to add and remove
                         createQuizComponents();
 
                         configureQuizComponents();
@@ -603,8 +719,10 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
                         currentlyShownPanel = "edit";
                         cl.show(containerPanel, currentlyShownPanel);
 
+                        // change the title for the newly shown panel
                         setTitle(savedQSets.get(selectedSet).getName() + " (Editing)");
 
+                        // draw the edit table
                         createTable("edit");
                     }else{
                         JOptionPane.showMessageDialog(this, "You must select a quiz set.", "ERROR", JOptionPane.ERROR_MESSAGE);
@@ -628,8 +746,10 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
                             }
                         }
 
+                        // recreate the table
                         this.createTable("set");
 
+                        // clear the detail labels
                         qBankNameLabel.setText("Name: ");
                         qBankCreatedLabel.setText("Created: ");
                         qBankQNumLabel.setText("Number of Questions: ");
@@ -650,10 +770,13 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
 
                             String createdDate = LocalDateTime.now().format(dtFormat);
 
+                            // create the new quiz set with the name
                             QuizSet newQSet = new QuizSet(newSetName, createdDate);
 
+                            // go ahead and save the set
                             this.saveQuizSet(newQSet);
 
+                            // recreate the table with the new created set
                             this.createTable("set");
                         }else if(newSetName.equals("")) {
                             JOptionPane.showMessageDialog(this, "Your quiz set must have a name.", "ERROR", JOptionPane.ERROR_MESSAGE);
@@ -662,6 +785,9 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
                 }
             }else if(currentlyShownPanel.equals("edit")) {
                 if(((JButton) source).getText().equals("Add")) {
+
+                    // clear any text that might be in the new question components from
+                    // a previously added question
 
                     newQuestionQText.setText("");
 
@@ -711,10 +837,15 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
 
                         newQuestionQText.setText(savedQSets.get(selectedSet).getQuestion(selectedQuestion).getQuesText());
 
+                        // get the number of choice fields currently on the edit panel
+                        // we do this because there is a chance the user added a question with multiple
+                        // choices and then later goes back to edit it
                         Component[] choiceFields = newQuestionQChoicePanel.getComponents();
 
+                        // the actual number of question choices we have for the selected question
                         ArrayList<String> quesChoice = savedQSets.get(selectedSet).getQuestion(selectedQuestion).getChoices();
 
+                        // remove the components what we have right now
                         while(choiceFields.length != 0) {
                             if(choiceFields.length == 0) {
                                 break;
@@ -724,12 +855,14 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
                             }
                         }
 
+                        // now that we have a clean empty panel, add the correct number of choice textfields
                         for(int i=0; i<quesChoice.size(); i++) {
                             newQuestionQChoicePanel.add(Box.createRigidArea(new Dimension(0, 5)));
                             newQuestionQChoicePanel.add(new JTextField(20));
                             newQuestionPane.validate();
                         }
 
+                        // add the text from the question choice to the correct component
                         choiceFields = newQuestionQChoicePanel.getComponents();
 
                         int quesChoiceCount = 0;
@@ -740,14 +873,21 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
                             }
                         }
 
+                        // if we have more than one choice then make sure the remove button is enabled
                         if(quesChoice.size() > 1) {
                             newQuestionQChoiceRemButton.setEnabled(true);
                         }
 
+
+                        // get the number of answer fields currently on the edit panel
+                        // we do this because there is a chance the user added a question with multiple
+                        // answer and then later goes back to edit it
                         Component[] answerFields = newQuestionQAnsPanel.getComponents();
 
+                        // the actual number of question answer we have for the selected question
                         ArrayList<String> quesAnswer = savedQSets.get(selectedSet).getQuestion(selectedQuestion).getAnswers();
 
+                        // remove the components what we have right now
                         while(answerFields.length != 0) {
                             if(answerFields.length == 0) {
                                 break;
@@ -757,6 +897,7 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
                             }
                         }
 
+                        // now that we have a clean empty panel, add the correct number of answer textfields
                         for(int i=0; i<quesAnswer.size(); i++) {
                             newQuestionQAnsPanel.add(Box.createRigidArea(new Dimension(0, 5)));
                             newQuestionQAnsPanel.add(new JTextField(20));
@@ -773,6 +914,7 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
                             }
                         }
 
+                        // if we have more than one answer then make sure the remove button is enabled
                         if(quesAnswer.size() > 1) {
                             newQuestionQAnsRemButton.setEnabled(true);
                         }
@@ -799,6 +941,7 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
 
                 }else if(((JButton) source).getText().equals("Save")) {
 
+                    // save the quiz set
                     saveQuizSet(savedQSets.get(selectedSet));
 
                     CardLayout cl = (CardLayout) containerPanel.getLayout();
@@ -812,6 +955,7 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
 
                     if(((JButton) source).getName().equals("Choice Add")) {
 
+                        // adding a new choice text field if there is at least one already existing
                         Component[] newQuesQChoicePanComponents = newQuestionQChoicePanel.getComponents();
 
                         newQuestionQChoicePanel.add(Box.createRigidArea(new Dimension(0, 5)));
@@ -843,9 +987,12 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
 
                         Component[] newQuesQChoicePanComponents = newQuestionQChoicePanel.getComponents();
 
+                        // make sure we have at least 1 choice avaiable
                         if(newQuesQChoicePanComponents.length > 1) {
+                            // remove the most recent two components
                             for(int i=0; i<2; i++) {
                                 newQuestionQChoicePanel.remove(newQuesQChoicePanComponents[newQuesQChoicePanComponents.length-1]);
+                                // refresh component list
                                 newQuesQChoicePanComponents = newQuestionQChoicePanel.getComponents();
                                 newQuestionPane.validate();
                             }
@@ -859,9 +1006,12 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
 
                         Component[] newQuesQAnsPanComponents = newQuestionQAnsPanel.getComponents();
 
+                        // make sure we have at least 1 choice avaiable
                         if(newQuesQAnsPanComponents.length > 1) {
+                            // remove the most recent two components
                             for(int i=0; i<2; i++) {
                                 newQuestionQAnsPanel.remove(newQuesQAnsPanComponents[newQuesQAnsPanComponents.length-1]);
+                                // refresh component list
                                 newQuesQAnsPanComponents = newQuestionQAnsPanel.getComponents();
                                 newQuestionPane.validate();
                             }
@@ -875,7 +1025,12 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
                 }else if(((JButton) source).getText().equals("Save")) {
 
 
+                    // only add the question if this is true once we are done checking everything
                     boolean addQuestion = false;
+
+                    // get all of the values to make a new question
+
+                    // get which radio button is selected
 
                     String radioSelText = null;
                     int qType = 0;
@@ -885,6 +1040,7 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
                     for(int i=0; i<newQuestionQTypeSelComps.length; i++) {
                         if(newQuestionQTypeSelComps[i] instanceof JRadioButton) {
                             if(((JRadioButton) newQuestionQTypeSelComps[i]).isSelected()) {
+                                // get the next component over which will be the label for the radio button
                                 radioSelText = ((JLabel) newQuestionQTypeSelComps[i+1]).getText();
                                 if(radioSelText.equals("Multiple Choice")) {
                                     qType = 1;
@@ -897,6 +1053,8 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
                         }
                     }
 
+                    // get question text and make sure that it is not blank
+
                     String questionText = newQuestionQText.getText();
 
                     if(questionText.trim().length() == 0) {
@@ -906,6 +1064,8 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
                     }else {
                         addQuestion = true;
                     }
+
+                    // get question choices and check for empty fields
 
                     ArrayList<String> questionChoices = new ArrayList<String>();
 
@@ -924,6 +1084,8 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
                         }
                     }
 
+                    // get question answers and check for empty fields
+
                     ArrayList<String> questionAnswers = new ArrayList<String>();
 
                     Component[] newQuestionQAnsComps = newQuestionQAnsPanel.getComponents();
@@ -941,8 +1103,13 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
                         }
                     }
 
+                    // go through the answers and make sure that they match up with the choices
+                    // what is trying to be prevented here is making sure that the user doesn't get
+                    // the wrong answer for something like a '.' in the choice when it is not in the answer
+
                     for(Component ansComp : newQuestionQAnsComps) {
 
+                        // get the choice string values
                         ArrayList<String> choiceString = new ArrayList<String>();
 
                         for(Component choiceComp : newQuestionQChoiceComps) {
@@ -965,6 +1132,8 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
 
                     if(addQuestion) {
 
+                        // the ID for the new question will be the number question that it is in the set
+
                         int newQuesId;
 
                         if(editingQuestion) {
@@ -973,21 +1142,31 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
                             newQuesId = (savedQSets.get(selectedSet).getAllQuestions().size())+1;
                         }
 
+                        // make a new question
                         Question newQuestion = new Question(newQuesId, qType, questionText, questionChoices, questionAnswers);
 
                         if(editingQuestion) {
+                            // if we are editing then just overwrite the question
                             savedQSets.get(selectedSet).saveQuestion(newQuestion);
                         }else {
+                            // add this question to the set
                             savedQSets.get(selectedSet).addQuestion(newQuestion);
                         }
+
+                        // we are actually going to secretly save the quiz set here, reload it, and recreate both
+                        // the edit panel question list table and the quiz set table back on the main screen
+                        // so that we can display the updated question list back on the edit screen and updated
+                        // question numbers for the quiz set
 
                         saveQuizSet(savedQSets.get(selectedSet));
                         loadAllQuizSets();
                         createTable("edit");
                         createTable("set");
 
+                        // update the labels on main screen
                         setQSetLabels();
 
+                        // take us back to the edit screen
 
                         CardLayout cl = (CardLayout) containerPanel.getLayout();
 
@@ -1051,6 +1230,7 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
 
                         ArrayList<ArrayList<String>> allUserAnswers = new ArrayList<ArrayList<String>>();
 
+                        // go through each component and extract the selected answers
                         for(ArrayList<Component> choiceComponents : quizChoiceComponents) {
 
                             ArrayList<String> questionUserAnswers = new ArrayList<String>();
@@ -1074,8 +1254,10 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
 
                         float userScore = qEng.gradeQuiz(allUserAnswers);
 
+                        // send this score to the selected quiz set
                         savedQSets.get(selectedSet).addGrade(userScore);
 
+                        // save the set
                         saveQuizSet(savedQSets.get(selectedSet));
                         loadAllQuizSets();
                         createTable("edit");
@@ -1095,6 +1277,7 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
 
                         setTitle(savedQSets.get(selectedSet).getName() + " Results");
 
+                        // get the answer that the user got incorrect
                         ArrayList<Question> incorrectQuestions = qEng.getIncorrectQuestionSet();
                         ArrayList<ArrayList<String>> incorrectUserAnswers = qEng.getIncorrectUserAnswers();
 
@@ -1141,6 +1324,7 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
                                 missedCorrectPanel.add(missedCorrect);
                             }
 
+                            // set layouts
                             missedPanel.setLayout(new BoxLayout(missedPanel, BoxLayout.PAGE_AXIS));
                             missedLabelPanel.setLayout(new BoxLayout(missedLabelPanel, BoxLayout.LINE_AXIS));
                             missedTextPanel.setLayout(new BoxLayout(missedTextPanel, BoxLayout.LINE_AXIS));
@@ -1190,6 +1374,7 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
 
                     CardLayout cl = (CardLayout) containerPanel.getLayout();
 
+                    // switch to the quiz panel
                     currentlyShownPanel = "quiz";
 
                     cl.show(containerPanel, currentlyShownPanel);
@@ -1207,6 +1392,9 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
             }
         }else if(source instanceof JRadioButton) {
             if(((JRadioButton) source).getName().equals("Multiple Choice")) {
+                // if it is multiple choice then we should only have one answer
+                // so limit the amount of answer fields the user has and disable
+                // the add and remove answer buttons
 
                 Component[] newQuestionChoiceComps = newQuestionQChoicePanel.getComponents();
 
@@ -1240,17 +1428,22 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
         }
     }
 
+    // mouse listner functions
 
     public void mousePressed(MouseEvent e) {
+        // not used
     }
 
     public void mouseReleased(MouseEvent e) {
+        // not used
     }
 
     public void mouseEntered(MouseEvent e) {
+        // not used
     }
 
     public void mouseExited(MouseEvent e) {
+        // not used
     }
 
     public void mouseClicked(MouseEvent e) {
@@ -1265,8 +1458,10 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
 
             String selectedText = tableClicked.getValueAt(rowSelected, 0).toString();
 
+            // get the name of the selected bank
             if(tableClicked.getName().equals("Main Table")) {
 
+                // go through the saved quiz bank sets and get the correct one
                 for(int i=0; i<savedQSets.size(); i++) {
                     if(savedQSets.get(i).getName().equals(selectedText)) {
                         selectedSet = i;
@@ -1287,6 +1482,7 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
         }
     }
 
+    // document listener functions
     public void insertUpdate(DocumentEvent e) {
         System.out.println("Insert Update Fired!");
     }
@@ -1301,6 +1497,7 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
 
     private void setQSetLabels() {
 
+        // change all of the detail labels to information for the selected set
         qBankNameLabel.setText("Name:    " + savedQSets.get(selectedSet).getName());
         qBankCreatedLabel.setText("Created:    " + savedQSets.get(selectedSet).getCreatedDate());
         qBankQNumLabel.setText("Number of Questions:    " + String.valueOf(savedQSets.get(selectedSet).getQNum()));
@@ -1309,9 +1506,12 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
 
     }
 
+    // serializes the QuizSet object and saves it
     private void saveQuizSet(QuizSet qSet) {
         try {
 
+            // make a filename out of the set name
+            // replace spaces with dash
             String fileName = qSet.getName().replace(' ', '-');
             qSet.setFileName(fileName + ".ser");
 
@@ -1330,6 +1530,7 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
         }
     }
 
+    // deserialize the QuizSet object
     private void loadQuizSet(String fileName) {
         try {
             FileInputStream fileIn = new FileInputStream(fileName);
@@ -1349,23 +1550,31 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
         }
     }
 
+    // load all quiz sets in the savedQSetPath
     private void loadAllQuizSets() {
 
         savedQSets = new ArrayList<QuizSet>();
+
+        // get the list of saved quiz set files from the directory
 
         File savedQSetsNames = new File(savedQSetPath);
 
         String[] pathnames = savedQSetsNames.list();
 
+        // deserialize each filename
         for(String pathname : pathnames) {
             this.loadQuizSet(savedQSetPath + pathname);
         }
     }
 
+    // recreates either the QuizSet bank table or the preview table with
+    // new data. if param type = 'set' we do the QuizSet table, if it is
+    // 'preview' we do the preview table
     private void createTable(String tableType) {
 
         loadAllQuizSets();
 
+        // make a new table model
         DefaultTableModel tModel = new DefaultTableModel() {
             public boolean isCellEditable(int row, int column) {
                 return false;
@@ -1374,9 +1583,11 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
 
         if(tableType.equals("set")) {
 
+            // set the headers
             String[] header = {"Quiz Banks"};
             tModel.setColumnIdentifiers(header);
 
+            // set the table rows
             for(int i=0; i<savedQSets.size(); i++) {
                 String[] tableRow = {savedQSets.get(i).getName()};
                 tModel.addRow(tableRow);
@@ -1385,6 +1596,7 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
             qBankTable = new JTable(tModel);
             qBankTable.setRowHeight(25);
             qBankTable.getTableHeader().setFont(new Font("Serif", Font.BOLD, 15));
+            // read the mouse listener if we are refreshing
             qBankTable.addMouseListener(this);
             qBankTable.setName("Main Table");
             qBankTablePane.setViewportView(qBankTable);
@@ -1408,11 +1620,14 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
 
         }else if(tableType.equals("edit")) {
 
+            // get all of the questions for the selected set
             ArrayList<Question> selSetQuestions = savedQSets.get(selectedSet).getAllQuestions();
 
+            // set the header for the table
             String[] header = {savedQSets.get(selectedSet).getName() + " Questions"};
             tModel.setColumnIdentifiers(header);
 
+            // set the table rows
             for(int i=0; i<selSetQuestions.size(); i++) {
                 String[] tableRow = {selSetQuestions.get(i).getQuesText()};
                 tModel.addRow(tableRow);
@@ -1428,6 +1643,10 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
         }
     }
 
+
+    // takes the selected quiz set and iterated through the choices,
+    // creating components for the choices based on the question type
+    // and storing them inside the ArrayList
     private void createQuizComponents() {
 
         quizChoiceComponents = new ArrayList<ArrayList<Component>>();
@@ -1445,43 +1664,63 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
             if(quesType == 1) {
                 ButtonGroup quizButtonGroup = new ButtonGroup();
                 for(String choice : questionChoices) {
+                    // type 1 is JRadioButtons
                     JRadioButton radioChoice = new JRadioButton("<html>" + choice + "</html>");
+                    // add the component to the component ArrayList and button group
                     compList.add(radioChoice);
                     quizButtonGroup.add(radioChoice);
                 }
             }else if(quesType == 2) {
                 for(String choice : questionChoices) {
+                    // type 2 is JCheckBoxes
                     JCheckBox checkBoxChoice = new JCheckBox("<html>" + choice + "</html>");
                     compList.add(checkBoxChoice);
                 }
             }else if(quesType == 3) {
                 for(String choice : questionChoices) {
+                    // type 3 is JTextFields
                     JTextField textFieldChoice = new JTextField(20);
                     compList.add(textFieldChoice);
                 }
             }
+            // add the ArrayList of components to the global ArrayList to retrieve later
             quizChoiceComponents.add(compList);
         }
     }
 
     private void configureQuizComponents() {
 
+        // we've got three components that we need to configure
+        // 1. Question number label (quizQuestionLabel)
+        // 2. The question text (quizQuestionText)
+        // 3. The question choice (quizChoicePanel)
+
         ArrayList<Integer> qSequence = qEng.getQuestionSequence();
+
+        // get the current question from the generated quiz
 
         Question curQuestion = qEng.getQuestion(qEng.getCurQuesNum());
 
+        // set question number label
         quizQuestionLabel.setText("Question " + (qEng.getCurQuesNum()+1));
 
+        // set the question text
         quizQuestionText.setText("<html>" + curQuestion.getQuesText() + "</html>");
 
+        // remove all of the components in the quizChoicePanel
         quizChoicePanel.removeAll();
         quizChoicePanel.validate();
         quizChoiceScrollPane.validate();
 
         int questionType = curQuestion.getQType();
 
+        // get the choices for the question
         ArrayList<String> quesChoices = curQuestion.getChoices();
 
+        // set the grid layout to match the amount of choices we have
+        // the tradional layout is a x/2 layout where x is an even number of
+        // rows. Of course if we have an odd number of choices then we will not use both
+        // column slots for the last row
         if(questionType == 3) {
             quizChoicePanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         }else {
@@ -1492,6 +1731,8 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
         quizChoicePanel.validate();
         quizChoiceScrollPane.validate();
         repaint();
+
+        // get the created components for the given question and add them to the panel
 
         ArrayList<Component> quesComps = quizChoiceComponents.get(qEng.getCurQuesNum());
 
