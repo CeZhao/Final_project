@@ -1,4 +1,4 @@
-//ddddd
+
 import javax.swing.*;
 import javax.swing.UIManager.*;
 import javax.swing.event.*;
@@ -197,6 +197,7 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
     private JButton quizNextButton = new JButton("Next");
     // Hint
     private JButton quizHintButton = new JButton("Hint");
+    private JLabel quizHintLabel = new JLabel();
 
     // END QUIZ PANEL COMPONENTS
 
@@ -568,6 +569,7 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
 // Hint
         quizHintButton.addActionListener(this);
         quizPrevNextButtonPanel.add(quizHintButton);
+        quizPrevNextButtonPanel.add(quizHintLabel);
         quizPrevNextButtonPanel.add(Box.createRigidArea(new Dimension(10, 0)));
 
 
@@ -691,6 +693,8 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
 
                         quizLabel.setText(savedQSets.get(selectedSet).getName());
 
+                        quizHintLabel.setText("");
+
                         // create the components to add and remove
                         createQuizComponents();
 
@@ -807,6 +811,14 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
                         }
                     }
 
+                    Component[] newQuestionQHintComps = newQuestionQHintPanel.getComponents();
+
+                    for(Component comp : newQuestionQHintComps) {
+                        if(comp instanceof JTextField) {
+                            ((JTextField) comp).setText("");
+                        }
+                    }
+
                     CardLayout cl = (CardLayout) containerPanel.getLayout();
                     currentlyShownPanel = "newQuestion";
                     cl.show(containerPanel, currentlyShownPanel);
@@ -836,7 +848,7 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
                         }
 
                         newQuestionQText.setText(savedQSets.get(selectedSet).getQuestion(selectedQuestion).getQuesText());
-
+                        newQuestionQHint.setText(savedQSets.get(selectedSet).getQuestion(selectedQuestion).getHint());
                         // get the number of choice fields currently on the edit panel
                         // we do this because there is a chance the user added a question with multiple
                         // choices and then later goes back to edit it
@@ -919,6 +931,16 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
                             newQuestionQAnsRemButton.setEnabled(true);
                         }
 
+//                        Component[] hintFields = newQuestionQHintPanel.getComponents();
+//
+//                        while(hintFields.length != 0) {
+//                            if(hintFields.length == 0) {
+//                                break;
+//                            }else {
+//                                newQuestionQHintPanel.remove(hintFields[hintFields.length-1]);
+//                                hintFields = newQuestionQHintPanel.getComponents();
+//                            }
+//                        }
                         CardLayout cl = (CardLayout) containerPanel.getLayout();
                         currentlyShownPanel = "newQuestion";
                         cl.show(containerPanel, currentlyShownPanel);
@@ -977,7 +999,6 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
                         if(!(newQuestionQAnsRemButton.isEnabled())) {
                             newQuestionQAnsRemButton.setEnabled(true);
                         }
-
 
                     }
 
@@ -1056,12 +1077,17 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
                     // get question text and make sure that it is not blank
 
                     String questionText = newQuestionQText.getText();
+                    String hint_text = newQuestionQHint.getText();
 
                     if(questionText.trim().length() == 0) {
                         JOptionPane.showMessageDialog(this, "Question text must contain at least one alphaneumeric character.", "ERROR", JOptionPane.ERROR_MESSAGE);
                         questionText = null;
                         addQuestion = false;
-                    }else {
+                    }else if(hint_text.trim().length() == 0){
+                        JOptionPane.showMessageDialog(this, "Question text must contain at least one alphaneumeric character.", "ERROR", JOptionPane.ERROR_MESSAGE);
+                        hint_text = null;
+                        addQuestion = false;
+                    }else{
                         addQuestion = true;
                     }
 
@@ -1143,7 +1169,7 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
                         }
 
                         // make a new question
-                        Question newQuestion = new Question(newQuesId, qType, questionText, questionChoices, questionAnswers);
+                        Question newQuestion = new Question(newQuesId, qType, questionText, questionChoices, questionAnswers, hint_text);
 
                         if(editingQuestion) {
                             // if we are editing then just overwrite the question
@@ -1211,7 +1237,7 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
                         if(qEng.getCurQuesNum() == 0) {
                             quizPrevButton.setEnabled(false);
                         }
-
+                        quizHintLabel.setText("");
                     }else if(((JButton) source).getText().equals("Next")) {
 
                         if(qEng.getCurQuesNum() < qEng.getQuizSet().size()-1) {
@@ -1225,7 +1251,7 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
                         if(qEng.getCurQuesNum() == qEng.getQuizSet().size()-1) {
                             quizNextButton.setText("Grade Quiz");
                         }
-
+                        quizHintLabel.setText("");
                     }else if(((JButton) source).getText().equals("Grade Quiz")){
 
                         ArrayList<ArrayList<String>> allUserAnswers = new ArrayList<ArrayList<String>>();
@@ -1355,7 +1381,9 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
                             quizResultMissedQuestionPanel.add(new JSeparator(SwingConstants.HORIZONTAL));
                         }
 
-
+                    }else if(((JButton) source).getText().equals("Hint")){
+                        Question curQuestion = qEng.getQuestion(qEng.getCurQuesNum());
+                        quizHintLabel.setText(curQuestion.getHint());
                     }
                 }
             }else if(currentlyShownPanel.equals("results")) {
@@ -1366,6 +1394,8 @@ public class QuizGui extends JFrame implements ActionListener, MouseListener, Do
                     qEng.setQuestionSet(savedQSets.get(selectedSet).getAllQuestions());
 
                     qEng.generateQuiz();
+
+                    quizHintLabel.setText("");
 
                     // create the components to add and remove
                     createQuizComponents();
