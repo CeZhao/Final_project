@@ -6,6 +6,7 @@ public class QuizSet implements java.io.Serializable {
     private String fileName;
     private int qNum = 0;
     private String createdDate;
+    private int num = 1;
 
     private ArrayList<Question> qSet = new ArrayList<Question>();
 
@@ -36,6 +37,10 @@ public class QuizSet implements java.io.Serializable {
     public int getQNum() {
         return qSet.size();
     }
+
+    public int getNum(){ return num;}
+
+    public void setNum(int n){ this.num = n;}
 
     public String getCreatedDate() {
         return this.createdDate;
